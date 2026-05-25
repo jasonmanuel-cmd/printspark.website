@@ -1,13 +1,27 @@
 import Stripe from "stripe";
 
-if (!process.env.STRIPE_SECRET_KEY) {
-  throw new Error("Missing STRIPE_SECRET_KEY environment variable");
+// Lazy initialization to avoid build-time errors
+let stripeInstance: Stripe | null = null;
+
+export function getStripe() {
+  if (!stripeInstance) {
+    if (!process.env.STRIPE_SECRET_KEY) {
+      throw new Error("Missing STRIPE_SECRET_KEY environment variable");
+    }
+    stripeInstance = new Stripe(process.env.STRIPE_SECRET_KEY, {
+      apiVersion: "2026-04-22.dahlia",
+      typescript: true,
+    });
+  }
+  return stripeInstance;
 }
 
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: "2024-12-18.acacia",
-  typescript: true,
-});
+export const stripe = typeof process.env.STRIPE_SECRET_KEY === 'string'
+  ? new Stripe(process.env.STRIPE_SECRET_KEY, {
+      apiVersion: "2026-04-22.dahlia",
+      typescript: true,
+    })
+  : null as any;
 
 export const STRIPE_CONFIG = {
   currency: "usd",
@@ -43,7 +57,7 @@ export async function createCheckoutSession({
   successUrl: string;
   cancelUrl: string;
 }) {
-  const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = items.map(
+  const lineItems = items.map(
     (item) => ({
       price_data: {
         currency: STRIPE_CONFIG.currency,
@@ -72,8 +86,8 @@ export async function createCheckoutSession({
     });
   }
 
-  const session = await stripe.checkout.sessions.create({
-    payment_method_types: STRIPE_CONFIG.paymentMethods as Stripe.Checkout.SessionCreateParams.PaymentMethodType[],
+  const session = await getStripe().checkout.sessions.create({
+    payment_method_types: STRIPE_CONFIG.paymentMethods as any,
     line_items: lineItems,
     mode: "payment",
     success_url: successUrl,
@@ -98,12 +112,12 @@ export async function createCheckoutSession({
 
 // Helper function to retrieve a checkout session
 export async function getCheckoutSession(sessionId: string) {
-  return await stripe.checkout.sessions.retrieve(sessionId);
+  return await getStripe().checkout.sessions.retrieve(sessionId);
 }
 
 // Helper function to create a refund
 export async function createRefund(paymentIntentId: string, amount?: number) {
-  const refund = await stripe.refunds.create({
+  const refund = await getStripe().refunds.create({
     payment_intent: paymentIntentId,
     amount: amount ? Math.round(amount * 100) : undefined,
   });
@@ -122,12 +136,12 @@ export function constructWebhookEvent(
     throw new Error("Missing STRIPE_WEBHOOK_SECRET environment variable");
   }
 
-  return stripe.webhooks.constructEvent(payload, signature, webhookSecret);
+  return getStripe().webhooks.constructEvent(payload, signature, webhookSecret);
 }
 
 // Helper function to retrieve payment intent
 export async function getPaymentIntent(paymentIntentId: string) {
-  return await stripe.paymentIntents.retrieve(paymentIntentId);
+  return await getStripe().paymentIntents.retrieve(paymentIntentId);
 }
 
 // Helper function to update payment intent
@@ -135,5 +149,5 @@ export async function updatePaymentIntent(
   paymentIntentId: string,
   updates: Stripe.PaymentIntentUpdateParams
 ) {
-  return await stripe.paymentIntents.update(paymentIntentId, updates);
+  return await getStripe().paymentIntents.update(paymentIntentId, updates);
 }
