@@ -1,0 +1,113 @@
+@import "tailwindcss";
+
+/* PrintFlow Brand Colors - Professional Print Business */
+:root {
+  /* Primary Brand Colors */
+  --cream: #F5F1E8;
+  --navy: #1E3A5F;
+  --orange: #FF6B35;
+  --charcoal: #2D3436;
+  --teal: #4A9B8E;
+
+  /* Shades */
+  --cream-dark: #E8E1D3;
+  --navy-light: #2E4A6F;
+  --orange-dark: #E55A2B;
+  --teal-light: #5AAFA0;
+
+  /* Semantic */
+  --background: #F5F1E8;
+  --foreground: #2D3436;
+  --primary: #FF6B35;
+  --secondary: #1E3A5F;
+  --accent: #4A9B8E;
+
+  /* Functional */
+  --border: #D4CFC0;
+  --input-bg: #FFFFFF;
+  --muted: #6C757D;
+  --success: #28A745;
+  --error: #DC3545;
+}
+
+@theme inline {
+  /* Colors */
+  --color-cream: var(--cream);
+  --color-cream-dark: var(--cream-dark);
+  --color-navy: var(--navy);
+  --color-navy-light: var(--navy-light);
+  --color-orange: var(--orange);
+  --color-orange-dark: var(--orange-dark);
+  --color-charcoal: var(--charcoal);
+  --color-teal: var(--teal);
+  --color-teal-light: var(--teal-light);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-secondary: var(--secondary);
+  --color-accent: var(--accent);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-success: var(--success);
+  --color-error: var(--error);
+
+  /* Typography */
+  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-serif: Georgia, Cambria, "Times New Roman", serif;
+}
+
+/* Subtle texture overlay */
+body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0.02;
+  background-image: radial-gradient(circle at 2px 2px, var(--charcoal) 1px, transparent 1px);
+  background-size: 4px 4px;
+  z-index: 9999;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Focus styles */
+*:focus-visible {
+  outline: 3px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Selection */
+::selection {
+  background-color: var(--primary);
+  color: white;
+}
+
+/* Stripe Elements styling */
+.StripeElement {
+  padding: 12px;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  background: white;
+}
+
+.StripeElement--focus {
+  border-color: var(--primary);
+}
+
+.StripeElement--invalid {
+  border-color: var(--error);
+}
