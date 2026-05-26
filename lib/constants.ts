@@ -1,11 +1,13 @@
 export const BUSINESS_INFO = {
-  name: "PrintFlow",
-  tagline: "Professional Printing, Delivered Nationwide",
-  email: "orders@printflow.co",
-  support: "support@printflow.co",
-  phone: "(888) 555-7746",
-  address: "123 Print Street, Suite 100, New York, NY 10001",
-  hours: "Monday - Friday: 9AM - 6PM EST",
+  name: "PrintSpark",
+  slogan: "Print Fast. Look Amazing.",
+  tagline: "Your Vision, Perfectly Printed",
+  email: "hello@printspark.website",
+  support: "support@printspark.website",
+  phone: "(888) 774-6877", // (888) PRINTSPARK
+  address: "Nationwide Print Services", // Update when you have physical location
+  hours: "Monday - Friday: 9AM - 7PM EST | Saturday: 10AM - 4PM EST",
+  website: "printspark.website",
 };
 
 export const SHIPPING_RATES = {

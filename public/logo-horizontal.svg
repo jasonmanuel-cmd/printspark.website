@@ -1,0 +1,12 @@
+<svg width="400" height="100" viewBox="0 0 400 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Horizontal logo for header -->
+  <!-- Lightning bolt -->
+  <path d="M25 20L15 50H30L20 80L40 45H25L35 20Z" fill="#FF6B35"/>
+
+  <!-- PRINTSPARK horizontal -->
+  <text x="60" y="60" font-family="Arial, sans-serif" font-size="36" font-weight="700" fill="#1E3A8A">PRINT</text>
+  <text x="180" y="60" font-family="Arial, sans-serif" font-size="36" font-weight="700" fill="#FF6B35">SPARK</text>
+
+  <!-- Tagline -->
+  <text x="60" y="85" font-family="Arial, sans-serif" font-size="12" font-weight="400" fill="#6B7280">Print Fast. Look Amazing.</text>
+</svg>

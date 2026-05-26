@@ -1,46 +1,54 @@
 @import "tailwindcss";
 
-/* PrintFlow Brand Colors - Professional Print Business */
+/* PrintSpark Brand Colors - Print Fast. Look Amazing. ⚡ */
 :root {
   /* Primary Brand Colors */
-  --cream: #F5F1E8;
-  --navy: #1E3A5F;
-  --orange: #FF6B35;
+  --electric-orange: #FF6B35;
+  --deep-navy: #1E3A8A;
+  --bright-teal: #14B8A6;
   --charcoal: #2D3436;
-  --teal: #4A9B8E;
+  --warm-cream: #F5F1E8;
 
   /* Shades */
-  --cream-dark: #E8E1D3;
-  --navy-light: #2E4A6F;
+  --orange-light: #FF8C61;
   --orange-dark: #E55A2B;
-  --teal-light: #5AAFA0;
+  --navy-light: #2563EB;
+  --navy-dark: #1E3A8A;
+  --teal-light: #2DD4BF;
+  --teal-dark: #0F766E;
+  --cream-dark: #E8E1D3;
 
   /* Semantic */
   --background: #F5F1E8;
   --foreground: #2D3436;
   --primary: #FF6B35;
-  --secondary: #1E3A5F;
-  --accent: #4A9B8E;
+  --secondary: #1E3A8A;
+  --accent: #14B8A6;
 
   /* Functional */
-  --border: #D4CFC0;
+  --border: #E5E7EB;
   --input-bg: #FFFFFF;
-  --muted: #6C757D;
-  --success: #28A745;
-  --error: #DC3545;
+  --muted: #6B7280;
+  --success: #10B981;
+  --warning: #F59E0B;
+  --error: #EF4444;
+  --info: #3B82F6;
 }
 
 @theme inline {
-  /* Colors */
-  --color-cream: var(--cream);
-  --color-cream-dark: var(--cream-dark);
-  --color-navy: var(--navy);
-  --color-navy-light: var(--navy-light);
-  --color-orange: var(--orange);
+  /* PrintSpark Brand Colors */
+  --color-orange: var(--electric-orange);
+  --color-orange-light: var(--orange-light);
   --color-orange-dark: var(--orange-dark);
-  --color-charcoal: var(--charcoal);
-  --color-teal: var(--teal);
+  --color-navy: var(--deep-navy);
+  --color-navy-light: var(--navy-light);
+  --color-navy-dark: var(--navy-dark);
+  --color-teal: var(--bright-teal);
   --color-teal-light: var(--teal-light);
+  --color-teal-dark: var(--teal-dark);
+  --color-charcoal: var(--charcoal);
+  --color-cream: var(--warm-cream);
+  --color-cream-dark: var(--cream-dark);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-primary: var(--primary);
@@ -49,11 +57,13 @@
   --color-muted: var(--muted);
   --color-border: var(--border);
   --color-success: var(--success);
+  --color-warning: var(--warning);
   --color-error: var(--error);
+  --color-info: var(--info);
 
-  /* Typography */
-  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-serif: Georgia, Cambria, "Times New Roman", serif;
+  /* Typography - Inter for clean, modern readability */
+  --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-heading: 'Outfit', 'Inter', sans-serif;
 }
 
 /* Subtle texture overlay */

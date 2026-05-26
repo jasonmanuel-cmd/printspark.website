@@ -18,9 +18,21 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: "PrintFlow - Professional Printing, Delivered Nationwide",
-  description: "Order custom business cards, flyers, banners, t-shirts, and more. Fast turnaround, premium quality, delivered to your door.",
-  keywords: ["printing", "business cards", "flyers", "banners", "t-shirts", "custom printing", "print on demand"],
+  title: "PrintSpark - Print Fast. Look Amazing.",
+  description: "Your vision, perfectly printed. Custom business cards, flyers, banners, t-shirts, and more. 2-3 day turnaround, premium quality, delivered nationwide.",
+  keywords: ["printing", "custom printing", "business cards", "flyers", "banners", "t-shirts", "print on demand", "fast printing", "quality printing"],
+  openGraph: {
+    title: "PrintSpark - Print Fast. Look Amazing.",
+    description: "Your vision, perfectly printed. Fast turnaround, premium quality.",
+    url: "https://printspark.website",
+    siteName: "PrintSpark",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "PrintSpark - Print Fast. Look Amazing.",
+    description: "Custom printing with 2-3 day turnaround",
+  },
 };
 
 export default function RootLayout({
