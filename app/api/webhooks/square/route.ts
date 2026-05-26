@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
         const referenceId = payment.reference_id;
 
         if (!referenceId) break;
-        console.log(\`Payment created for order \${referenceId}\`);
+        console.log(`Payment created for order ${referenceId}`);
         break;
       }
 
@@ -63,7 +63,7 @@ export async function POST(req: NextRequest) {
             })
             .eq("id", referenceId);
 
-          console.log(\`Order \${referenceId} payment completed\`);
+          console.log(`Order ${referenceId} payment completed`);
         } else if (status === "FAILED") {
           await supabase
             .from("orders")
@@ -102,7 +102,7 @@ export async function POST(req: NextRequest) {
       }
 
       default:
-        console.log(\`Unhandled Square webhook: \${event.type}\`);
+        console.log(`Unhandled Square webhook: ${event.type}`);
     }
 
     return NextResponse.json({ received: true });
