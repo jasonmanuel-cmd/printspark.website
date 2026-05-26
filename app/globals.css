@@ -1,0 +1,123 @@
+@import "tailwindcss";
+
+/* PrintSpark Brand Colors - Print Fast. Look Amazing. ⚡ */
+:root {
+  /* Primary Brand Colors */
+  --electric-orange: #FF6B35;
+  --deep-navy: #1E3A8A;
+  --bright-teal: #14B8A6;
+  --charcoal: #2D3436;
+  --warm-cream: #F5F1E8;
+
+  /* Shades */
+  --orange-light: #FF8C61;
+  --orange-dark: #E55A2B;
+  --navy-light: #2563EB;
+  --navy-dark: #1E3A8A;
+  --teal-light: #2DD4BF;
+  --teal-dark: #0F766E;
+  --cream-dark: #E8E1D3;
+
+  /* Semantic */
+  --background: #F5F1E8;
+  --foreground: #2D3436;
+  --primary: #FF6B35;
+  --secondary: #1E3A8A;
+  --accent: #14B8A6;
+
+  /* Functional */
+  --border: #E5E7EB;
+  --input-bg: #FFFFFF;
+  --muted: #6B7280;
+  --success: #10B981;
+  --warning: #F59E0B;
+  --error: #EF4444;
+  --info: #3B82F6;
+}
+
+@theme inline {
+  /* PrintSpark Brand Colors */
+  --color-orange: var(--electric-orange);
+  --color-orange-light: var(--orange-light);
+  --color-orange-dark: var(--orange-dark);
+  --color-navy: var(--deep-navy);
+  --color-navy-light: var(--navy-light);
+  --color-navy-dark: var(--navy-dark);
+  --color-teal: var(--bright-teal);
+  --color-teal-light: var(--teal-light);
+  --color-teal-dark: var(--teal-dark);
+  --color-charcoal: var(--charcoal);
+  --color-cream: var(--warm-cream);
+  --color-cream-dark: var(--cream-dark);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-secondary: var(--secondary);
+  --color-accent: var(--accent);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-error: var(--error);
+  --color-info: var(--info);
+
+  /* Typography - Inter for clean, modern readability */
+  --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-heading: 'Outfit', 'Inter', sans-serif;
+}
+
+/* Subtle texture overlay */
+body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0.02;
+  background-image: radial-gradient(circle at 2px 2px, var(--charcoal) 1px, transparent 1px);
+  background-size: 4px 4px;
+  z-index: 9999;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Focus styles */
+*:focus-visible {
+  outline: 3px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Selection */
+::selection {
+  background-color: var(--primary);
+  color: white;
+}
+
+/* Stripe Elements styling */
+.StripeElement {
+  padding: 12px;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  background: white;
+}
+
+.StripeElement--focus {
+  border-color: var(--primary);
+}
+
+.StripeElement--invalid {
+  border-color: var(--error);
+}
