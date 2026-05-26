@@ -1,23 +1,22 @@
-import { Client, Environment, ApiError } from "square";
+import { SquareClient, SquareError } from "square";
 import { randomUUID } from "crypto";
 
 // Initialize Square client
-let squareInstance: Client | null = null;
+let squareInstance: SquareClient | null = null;
 
 export function getSquare() {
   if (!squareInstance) {
-    const accessToken = process.env.SQUARE_ACCESS_TOKEN;
-    const environment = process.env.SQUARE_ENVIRONMENT === "production"
-      ? Environment.Production
-      : Environment.Sandbox;
+    const token = process.env.SQUARE_ACCESS_TOKEN;
 
-    if (!accessToken) {
+    if (!token) {
       throw new Error("Missing SQUARE_ACCESS_TOKEN environment variable");
     }
 
-    squareInstance = new Client({
-      accessToken,
-      environment,
+    squareInstance = new SquareClient({
+      token,
+      environment: process.env.SQUARE_ENVIRONMENT === "production"
+        ? "https://connect.squareup.com"
+        : "https://connect.squareupsandbox.com",
     });
   }
   return squareInstance;
@@ -44,9 +43,9 @@ export async function createPayment({
   amount: number;
   note?: string;
 }) {
-  const { paymentsApi } = getSquare();
+  const client = getSquare();
 
-  const payment = await paymentsApi.createPayment({
+  const payment = await client.payments.createPayment({
     sourceId,
     idempotencyKey: randomUUID(),
     amountMoney: {
@@ -83,7 +82,7 @@ export async function createSquareOrder({
   shipping: number;
   total: number;
 }) {
-  const { ordersApi } = getSquare();
+  const client = getSquare();
 
   const lineItems = items.map((item) => ({
     name: item.name,
@@ -108,7 +107,7 @@ export async function createSquareOrder({
     });
   }
 
-  const order = await ordersApi.createOrder({
+  const order = await client.orders.createOrder({
     order: {
       locationId: SQUARE_CONFIG.locationId,
       referenceId: orderId,
@@ -126,16 +125,16 @@ export async function createSquareOrder({
 
 // Helper function to retrieve a payment
 export async function getPayment(paymentId: string) {
-  const { paymentsApi } = getSquare();
-  const payment = await paymentsApi.getPayment(paymentId);
+  const client = getSquare();
+  const payment = await client.payments.getPayment(paymentId);
   return payment.result;
 }
 
 // Helper function to create a refund
 export async function createRefund(paymentId: string, amount?: number) {
-  const { refundsApi } = getSquare();
+  const client = getSquare();
 
-  const refund = await refundsApi.refundPayment({
+  const refund = await client.refunds.refundPayment({
     idempotencyKey: randomUUID(),
     paymentId,
     amountMoney: amount ? {
@@ -162,9 +161,9 @@ export function verifyWebhookSignature(
 
 // Helper function to list all payments for an order
 export async function getOrderPayments(orderId: string) {
-  const { paymentsApi } = getSquare();
+  const client = getSquare();
 
-  const payments = await paymentsApi.listPayments({
+  const payments = await client.payments.listPayments({
     locationId: SQUARE_CONFIG.locationId,
     limit: 100,
   });
