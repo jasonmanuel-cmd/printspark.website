@@ -1,4 +1,4 @@
-import { SquareClient } from "square";
+import { SquareClient, Currency } from "square";
 import crypto, { randomUUID } from "crypto";
 
 // Initialize Square client
@@ -22,8 +22,11 @@ export function getSquare() {
   return squareInstance;
 }
 
-export const SQUARE_CONFIG = {
-  currency: "USD",
+export const SQUARE_CONFIG: {
+  currency: Currency;
+  locationId: string;
+} = {
+  currency: Currency.Usd,
   locationId: process.env.SQUARE_LOCATION_ID || "",
 };
 
@@ -45,7 +48,7 @@ export async function createPayment({
 }) {
   const client = getSquare();
 
-  const payment = await client.payments.create({
+  const response = await client.payments.create({
     sourceId,
     idempotencyKey: randomUUID(),
     amountMoney: {
@@ -58,7 +61,7 @@ export async function createPayment({
     buyerEmailAddress: customerEmail,
   });
 
-  return payment;
+  return response.payment;
 }
 
 // Helper function to create an order in Square
@@ -107,7 +110,7 @@ export async function createSquareOrder({
     });
   }
 
-  const order = await client.orders.create({
+  const response = await client.orders.create({
     order: {
       locationId: SQUARE_CONFIG.locationId,
       referenceId: orderId,
@@ -120,31 +123,31 @@ export async function createSquareOrder({
     idempotencyKey: randomUUID(),
   });
 
-  return order;
+  return response.order;
 }
 
 // Helper function to retrieve a payment
 export async function getPayment(paymentId: string) {
   const client = getSquare();
-  const payment = await client.payments.get(paymentId);
-  return payment;
+  const response = await client.payments.get({ paymentId });
+  return response.payment;
 }
 
 // Helper function to create a refund
 export async function createRefund(paymentId: string, amount?: number) {
   const client = getSquare();
 
-  const refund = await client.refunds.create({
+  const response = await client.refunds.refundPayment({
     idempotencyKey: randomUUID(),
     paymentId,
     amountMoney: amount ? {
       amount: BigInt(Math.round(amount * 100)),
       currency: SQUARE_CONFIG.currency,
-    } : undefined,
+    } : { amount: BigInt(0), currency: SQUARE_CONFIG.currency },
     reason: "Customer requested refund",
   });
 
-  return refund;
+  return response.refund;
 }
 
 // Helper function to verify webhook signature
@@ -162,15 +165,14 @@ export function verifyWebhookSignature(
 export async function getOrderPayments(orderId: string) {
   const client = getSquare();
 
-  const payments = await client.payments.list({
+  const page = await client.payments.list({
     locationId: SQUARE_CONFIG.locationId,
     limit: 100,
   });
 
-  // Filter by order reference ID
-  return payments?.filter(
+  return page.data.filter(
     (payment) => payment.referenceId === orderId
-  ) || [];
+  );
 }
 
 // This file intentionally does not export an eagerly-initialized client.
