@@ -45,7 +45,7 @@ export async function createPayment({
 }) {
   const client = getSquare();
 
-  const payment = await client.payments.createPayment({
+  const payment = await client.payments.create({
     sourceId,
     idempotencyKey: randomUUID(),
     amountMoney: {
@@ -58,7 +58,7 @@ export async function createPayment({
     buyerEmailAddress: customerEmail,
   });
 
-  return payment.result;
+  return payment;
 }
 
 // Helper function to create an order in Square
@@ -107,7 +107,7 @@ export async function createSquareOrder({
     });
   }
 
-  const order = await client.orders.createOrder({
+  const order = await client.orders.create({
     order: {
       locationId: SQUARE_CONFIG.locationId,
       referenceId: orderId,
@@ -120,21 +120,21 @@ export async function createSquareOrder({
     idempotencyKey: randomUUID(),
   });
 
-  return order.result;
+  return order;
 }
 
 // Helper function to retrieve a payment
 export async function getPayment(paymentId: string) {
   const client = getSquare();
-  const payment = await client.payments.getPayment(paymentId);
-  return payment.result;
+  const payment = await client.payments.get(paymentId);
+  return payment;
 }
 
 // Helper function to create a refund
 export async function createRefund(paymentId: string, amount?: number) {
   const client = getSquare();
 
-  const refund = await client.refunds.refundPayment({
+  const refund = await client.refunds.create({
     idempotencyKey: randomUUID(),
     paymentId,
     amountMoney: amount ? {
@@ -144,7 +144,7 @@ export async function createRefund(paymentId: string, amount?: number) {
     reason: "Customer requested refund",
   });
 
-  return refund.result;
+  return refund;
 }
 
 // Helper function to verify webhook signature
@@ -163,13 +163,13 @@ export function verifyWebhookSignature(
 export async function getOrderPayments(orderId: string) {
   const client = getSquare();
 
-  const payments = await client.payments.listPayments({
+  const payments = await client.payments.list({
     locationId: SQUARE_CONFIG.locationId,
     limit: 100,
   });
 
   // Filter by order reference ID
-  return payments.result.payments?.filter(
+  return payments?.filter(
     (payment) => payment.referenceId === orderId
   ) || [];
 }

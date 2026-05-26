@@ -111,9 +111,9 @@ export async function POST(req: NextRequest) {
       // Update order with payment info
       await updateOrder(order.id, {
         status: "paid",
-        payment_id: payment.payment?.id || "",
-        payment_status: payment.payment?.status || "",
-        square_order_id: squareOrder.order?.id || "",
+        payment_id: payment.id || "",
+        payment_status: payment.status || "",
+        square_order_id: squareOrder.id || "",
         updated_at: new Date().toISOString(),
       });
 
@@ -121,7 +121,7 @@ export async function POST(req: NextRequest) {
         success: true,
         orderId: order.id,
         orderNumber,
-        paymentId: payment.payment?.id,
+        paymentId: payment.id,
       });
     } catch (paymentError: any) {
       // Payment failed - update order status
