@@ -78,6 +78,21 @@ export async function getOrderByNumber(orderNumber: string) {
   return data;
 }
 
+export async function updateOrder(
+  orderId: string,
+  updateData: Partial<DbOrder> & Record<string, any>
+) {
+  const { data, error } = await supabase
+    .from("orders")
+    .update(updateData)
+    .eq("id", orderId)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
 export async function updateOrderStatus(
   orderId: string,
   status: string,
