@@ -33,7 +33,7 @@ export function formatDateTime(date: string | Date): string {
 }
 
 export function generateOrderNumber(): string {
-  const prefix = "PF";
+  const prefix = "PS";
   const timestamp = Date.now().toString().slice(-8);
   const random = Math.floor(Math.random() * 1000)
     .toString()
@@ -232,7 +232,7 @@ export function parseOrderNumber(orderNumber: string): {
   valid: boolean;
   timestamp?: number;
 } {
-  if (!orderNumber.startsWith("PF") || orderNumber.length !== 13) {
+  if (!orderNumber.startsWith("PS") || orderNumber.length !== 13) {
     return { valid: false };
   }
 

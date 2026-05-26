@@ -1,17 +1,35 @@
 import { createClient } from "@supabase/supabase-js";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+function getSupabaseClient() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+  if (!supabaseUrl || !supabaseAnonKey) {
+    throw new Error("Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY");
+  }
 
-// Server-side client with service role for admin operations
-export function getServerSupabase() {
-  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-  return createClient(supabaseUrl, supabaseServiceKey);
+  return createClient(supabaseUrl, supabaseAnonKey);
 }
 
-// Database table types
+function getServerSupabaseClient() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!supabaseUrl || !serviceKey) {
+    throw new Error("Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY");
+  }
+
+  return createClient(supabaseUrl, serviceKey);
+}
+
+export function getSupabase() {
+  return getSupabaseClient();
+}
+
+export function getServerSupabase() {
+  return getServerSupabaseClient();
+}
+
 export interface DbOrder {
   id: string;
   order_number: string;
@@ -29,7 +47,10 @@ export interface DbOrder {
   updated_at: string;
   customer_email: string;
   customer_phone: string;
-  payment_intent_id?: string;
+  payment_id?: string;
+  payment_status?: string;
+  square_order_id?: string;
+  payment_error?: string;
   notes?: string;
 }
 
@@ -55,8 +76,8 @@ export interface DbCustomer {
   created_at: string;
 }
 
-// Helper functions for database operations
 export async function createOrder(orderData: Partial<DbOrder>) {
+  const supabase = getSupabase();
   const { data, error } = await supabase
     .from("orders")
     .insert([orderData])
@@ -68,6 +89,7 @@ export async function createOrder(orderData: Partial<DbOrder>) {
 }
 
 export async function getOrderByNumber(orderNumber: string) {
+  const supabase = getSupabase();
   const { data, error } = await supabase
     .from("orders")
     .select("*")
@@ -82,6 +104,7 @@ export async function updateOrder(
   orderId: string,
   updateData: Partial<DbOrder> & Record<string, any>
 ) {
+  const supabase = getSupabase();
   const { data, error } = await supabase
     .from("orders")
     .update(updateData)
@@ -107,6 +130,7 @@ export async function updateOrderStatus(
     updateData.tracking_number = trackingNumber;
   }
 
+  const supabase = getSupabase();
   const { data, error } = await supabase
     .from("orders")
     .update(updateData)
@@ -119,6 +143,7 @@ export async function updateOrderStatus(
 }
 
 export async function getCustomerOrders(email: string) {
+  const supabase = getSupabase();
   const { data, error } = await supabase
     .from("orders")
     .select("*")
@@ -133,6 +158,7 @@ export async function uploadDesignFile(
   file: File,
   orderId: string
 ): Promise<string> {
+  const supabase = getSupabase();
   const fileName = `${orderId}/${Date.now()}-${file.name}`;
 
   const { data, error } = await supabase.storage
@@ -152,6 +178,7 @@ export async function uploadDesignFile(
 }
 
 export async function createDesignFileRecord(fileData: Partial<DbDesignFile>) {
+  const supabase = getSupabase();
   const { data, error } = await supabase
     .from("design_files")
     .insert([fileData])
@@ -163,6 +190,7 @@ export async function createDesignFileRecord(fileData: Partial<DbDesignFile>) {
 }
 
 export async function getOrderDesignFiles(orderId: string) {
+  const supabase = getSupabase();
   const { data, error } = await supabase
     .from("design_files")
     .select("*")
@@ -173,6 +201,7 @@ export async function getOrderDesignFiles(orderId: string) {
 }
 
 export async function createOrUpdateCustomer(customerData: Partial<DbCustomer>) {
+  const supabase = getSupabase();
   const { data: existing } = await supabase
     .from("customers")
     .select("*")

@@ -32,24 +32,36 @@ function QuoteContent() {
     e.preventDefault();
     setLoading(true);
 
-    // Simulate form submission
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    setSubmitted(true);
-    setLoading(false);
-
-    setTimeout(() => {
-      setSubmitted(false);
-      setFormData({
-        name: "",
-        email: "",
-        phone: "",
-        company: "",
-        productId: "",
-        quantity: "",
-        description: "",
+    try {
+      const response = await fetch("/api/quote", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
       });
-    }, 5000);
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Failed to submit quote request");
+      }
+
+      setSubmitted(true);
+      setTimeout(() => {
+        setSubmitted(false);
+        setFormData({
+          name: "",
+          email: "",
+          phone: "",
+          company: "",
+          productId: "",
+          quantity: "",
+          description: "",
+        });
+      }, 5000);
+    } catch (err) {
+      console.error("Quote form error:", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

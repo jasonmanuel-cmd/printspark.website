@@ -94,7 +94,7 @@ export default function TrackOrderPage() {
                 <Label htmlFor="orderNumber">Order Number</Label>
                 <Input
                   id="orderNumber"
-                  placeholder="PF12345678901"
+                  placeholder="PS12345678901"
                   value={orderNumber}
                   onChange={(e) => setOrderNumber(e.target.value)}
                   required

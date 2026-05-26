@@ -84,7 +84,7 @@ export const useCartStore = create<CartState>()(
       },
     }),
     {
-      name: "printflow-cart",
+      name: "printspark-cart",
       storage: createJSONStorage(() => localStorage),
     }
   )

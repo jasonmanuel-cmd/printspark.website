@@ -106,18 +106,7 @@ html {
   color: white;
 }
 
-/* Stripe Elements styling */
-.StripeElement {
-  padding: 12px;
-  border: 2px solid var(--border);
-  border-radius: 8px;
-  background: white;
-}
-
-.StripeElement--focus {
-  border-color: var(--primary);
-}
-
-.StripeElement--invalid {
-  border-color: var(--error);
+/* Square card input styling */
+#sq-card-container {
+  min-height: 48px;
 }

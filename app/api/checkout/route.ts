@@ -105,7 +105,7 @@ export async function POST(req: NextRequest) {
         customerEmail,
         sourceId: paymentToken,
         amount: total,
-        note: `PrintFlow Order ${orderNumber}`,
+        note: `PrintSpark Order ${orderNumber}`,
       });
 
       // Update order with payment info

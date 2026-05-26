@@ -12,26 +12,21 @@ import { useCartStore } from "@/lib/store";
 
 function OrderSuccessContent() {
   const searchParams = useSearchParams();
-  const sessionId = searchParams.get("session_id");
-  const [orderNumber, setOrderNumber] = useState<string | null>(null);
+  const orderId = searchParams.get("orderId");
+  const orderNumber = searchParams.get("orderNumber");
+  const [displayOrderNumber, setDisplayOrderNumber] = useState<string | null>(null);
   const clearCart = useCartStore((state) => state.clearCart);
 
   useEffect(() => {
-    // Clear cart after successful order
     clearCart();
-
-    // In a real app, you would fetch the order details using the session_id
-    // For now, we'll simulate it
-    if (sessionId) {
-      // Simulate fetching order number
-      setOrderNumber("PF" + Date.now().toString().slice(-11));
+    if (orderNumber) {
+      setDisplayOrderNumber(orderNumber);
     }
-  }, [sessionId, clearCart]);
+  }, [orderNumber, clearCart]);
 
   return (
     <div className="min-h-screen bg-gray-50 py-12">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-3xl">
-        {/* Success Banner */}
         <div className="bg-green-50 border-2 border-green-200 rounded-lg p-8 mb-8 text-center">
           <div className="flex justify-center mb-4">
             <div className="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center">
@@ -46,8 +41,7 @@ function OrderSuccessContent() {
           </p>
         </div>
 
-        {/* Order Details */}
-        {orderNumber && (
+        {orderNumber && displayOrderNumber && (
           <Card className="mb-8">
             <CardHeader>
               <CardTitle>Order Details</CardTitle>
@@ -58,7 +52,7 @@ function OrderSuccessContent() {
             <CardContent className="space-y-4">
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <p className="text-sm text-blue-900 font-medium mb-1">Order Number</p>
-                <p className="text-2xl font-bold text-blue-600 font-mono">{orderNumber}</p>
+                <p className="text-2xl font-bold text-blue-600 font-mono">{displayOrderNumber}</p>
                 <p className="text-sm text-blue-700 mt-2">
                   Save this number to track your order
                 </p>
@@ -89,7 +83,6 @@ function OrderSuccessContent() {
           </Card>
         )}
 
-        {/* Next Steps */}
         <Card className="mb-8">
           <CardHeader>
             <CardTitle>What Happens Next?</CardTitle>
@@ -97,9 +90,7 @@ function OrderSuccessContent() {
           <CardContent>
             <div className="space-y-4">
               <div className="flex items-start gap-4">
-                <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center flex-shrink-0 font-bold">
-                  1
-                </div>
+                <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center flex-shrink-0 font-bold">1</div>
                 <div>
                   <h4 className="font-semibold mb-1">Design Review</h4>
                   <p className="text-sm text-gray-600">
@@ -108,37 +99,26 @@ function OrderSuccessContent() {
                   </p>
                 </div>
               </div>
-
               <div className="flex items-start gap-4">
-                <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center flex-shrink-0 font-bold">
-                  2
-                </div>
+                <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center flex-shrink-0 font-bold">2</div>
                 <div>
                   <h4 className="font-semibold mb-1">Production</h4>
                   <p className="text-sm text-gray-600">
-                    Once approved, your order goes into production. Most orders are completed
-                    within 3-5 business days.
+                    Once approved, your order goes into production. Most orders are completed within 3-5 business days.
                   </p>
                 </div>
               </div>
-
               <div className="flex items-start gap-4">
-                <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center flex-shrink-0 font-bold">
-                  3
-                </div>
+                <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center flex-shrink-0 font-bold">3</div>
                 <div>
                   <h4 className="font-semibold mb-1">Shipping</h4>
                   <p className="text-sm text-gray-600">
-                    Your order will be shipped to the address you provided. You'll receive a
-                    tracking number via email.
+                    Your order will be shipped to the address you provided. You'll receive a tracking number via email.
                   </p>
                 </div>
               </div>
-
               <div className="flex items-start gap-4">
-                <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center flex-shrink-0 font-bold">
-                  4
-                </div>
+                <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center flex-shrink-0 font-bold">4</div>
                 <div>
                   <h4 className="font-semibold mb-1">Delivery</h4>
                   <p className="text-sm text-gray-600">
@@ -150,15 +130,13 @@ function OrderSuccessContent() {
           </CardContent>
         </Card>
 
-        {/* Action Buttons */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Button size="lg" asChild>
-            <Link href={orderNumber ? `/track?orderNumber=${orderNumber}` : "/track"}>
+            <Link href={displayOrderNumber ? `/track?orderNumber=${displayOrderNumber}` : "/track"}>
               <Package className="mr-2 h-5 w-5" />
               Track Your Order
             </Link>
           </Button>
-
           <Button size="lg" variant="outline" asChild>
             <Link href="/products">
               Continue Shopping
@@ -167,7 +145,6 @@ function OrderSuccessContent() {
           </Button>
         </div>
 
-        {/* Support Section */}
         <Card className="mt-8">
           <CardContent className="p-6">
             <h3 className="font-semibold mb-2">Need Help?</h3>
@@ -176,10 +153,10 @@ function OrderSuccessContent() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <Button variant="outline" asChild>
-                <a href="mailto:orders@printflow.co">Email Support</a>
+                <a href="mailto:support@printspark.website">Email Support</a>
               </Button>
               <Button variant="outline" asChild>
-                <a href="tel:(888)555-7746">Call Us</a>
+                <a href="tel:(888)774-6877">Call Us</a>
               </Button>
               <Button variant="outline" asChild>
                 <Link href="/contact">Contact Form</Link>

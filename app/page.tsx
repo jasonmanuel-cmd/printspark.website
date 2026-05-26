@@ -221,7 +221,7 @@ export default function Home() {
                 </div>
               </div>
               <p className="text-gray-600 mb-4">
-                "PrintFlow made ordering custom t-shirts for our event so easy. Great
+                "PrintSpark made ordering custom t-shirts for our event so easy. Great
                 prices and the print quality is outstanding!"
               </p>
               <p className="font-semibold">Mike Chen</p>

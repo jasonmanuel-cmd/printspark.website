@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useCartStore } from "@/lib/store";
 import { ShippingAddress } from "@/lib/types";
@@ -11,13 +11,22 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ShoppingCart, Trash2 } from "lucide-react";
+import { ShoppingCart, Trash2, CreditCard, Loader2 } from "lucide-react";
+
+declare global {
+  interface Window {
+    Square?: any;
+  }
+}
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const { items, removeItem, shippingMethod, setShippingMethod, clearCart } = useCartStore();
+  const { items, removeItem, shippingMethod, setShippingMethod } = useCartStore();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [squareReady, setSquareReady] = useState(false);
+  const [card, setCard] = useState<any>(null);
+  const [cardContainerId] = useState("sq-card-container");
 
   const [shippingAddress, setShippingAddress] = useState<ShippingAddress>({
     firstName: "",
@@ -35,12 +44,53 @@ export default function CheckoutPage() {
 
   const quote = items.length > 0 ? calculatePriceQuote(items, shippingMethod) : null;
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  // Load Square Web Payments SDK
+  useEffect(() => {
+    const appId = process.env.NEXT_PUBLIC_SQUARE_APPLICATION_ID;
+    if (!appId) {
+      setSquareReady(false);
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.src = "https://web.squarecdn.com/v1/square.js";
+    script.onload = async () => {
+      try {
+        const payments = window.Square?.payments(appId, "LOCAL");
+        if (payments) {
+          const cardInstance = await payments.card();
+          await cardInstance.attach(`#${cardContainerId}`);
+          setCard(cardInstance);
+          setSquareReady(true);
+        }
+      } catch {
+        setSquareReady(false);
+      }
+    };
+    document.body.appendChild(script);
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
+
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setLoading(true);
 
     try {
+      let sourceId = "SIMULATED_TOKEN";
+      const appId = process.env.NEXT_PUBLIC_SQUARE_APPLICATION_ID;
+
+      if (card && appId) {
+        const tokenResult = await card.tokenize();
+        if (tokenResult.status === "OK") {
+          sourceId = tokenResult.token;
+        } else {
+          throw new Error(tokenResult.errors?.[0]?.message || "Card tokenization failed");
+        }
+      }
+
       const response = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -49,23 +99,22 @@ export default function CheckoutPage() {
           shippingAddress,
           shippingMethod,
           customerEmail: shippingAddress.email,
+          paymentToken: sourceId,
         }),
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || "Failed to create checkout session");
+        throw new Error(data.error || data.message || "Failed to process checkout");
       }
 
-      const { url } = await response.json();
-
-      // Redirect to Stripe checkout
-      window.location.href = url;
+      router.push(`/order/success?orderId=${data.orderId}&orderNumber=${data.orderNumber}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
       setLoading(false);
     }
-  };
+  }, [items, shippingAddress, shippingMethod, card, router]);
 
   if (items.length === 0) {
     return (
@@ -87,7 +136,6 @@ export default function CheckoutPage() {
         <h1 className="text-3xl font-bold mb-8">Checkout</h1>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left Column - Forms */}
           <div className="lg:col-span-2 space-y-6">
             {/* Shipping Information */}
             <Card>
@@ -96,7 +144,7 @@ export default function CheckoutPage() {
                 <CardDescription>Where should we send your order?</CardDescription>
               </CardHeader>
               <CardContent>
-                <form onSubmit={handleSubmit} className="space-y-4">
+                <form onSubmit={handleSubmit} className="space-y-4" id="checkout-form">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="firstName">First Name *</Label>
@@ -109,7 +157,6 @@ export default function CheckoutPage() {
                         }
                       />
                     </div>
-
                     <div>
                       <Label htmlFor="lastName">Last Name *</Label>
                       <Input
@@ -121,17 +168,6 @@ export default function CheckoutPage() {
                         }
                       />
                     </div>
-                  </div>
-
-                  <div>
-                    <Label htmlFor="company">Company (Optional)</Label>
-                    <Input
-                      id="company"
-                      value={shippingAddress.company}
-                      onChange={(e) =>
-                        setShippingAddress({ ...shippingAddress, company: e.target.value })
-                      }
-                    />
                   </div>
 
                   <div>
@@ -195,7 +231,6 @@ export default function CheckoutPage() {
                         }
                       />
                     </div>
-
                     <div>
                       <Label htmlFor="state">State *</Label>
                       <Input
@@ -207,7 +242,6 @@ export default function CheckoutPage() {
                         }
                       />
                     </div>
-
                     <div>
                       <Label htmlFor="zipCode">ZIP Code *</Label>
                       <Input
@@ -221,8 +255,7 @@ export default function CheckoutPage() {
                     </div>
                   </div>
 
-                  {/* Shipping Method */}
-                  <div className="pt-4">
+                  <div>
                     <Label>Shipping Method *</Label>
                     <Select value={shippingMethod} onValueChange={(value: any) => setShippingMethod(value)}>
                       <SelectTrigger>
@@ -238,28 +271,54 @@ export default function CheckoutPage() {
                     </Select>
                   </div>
 
-                  {error && (
-                    <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-md">
-                      {error}
-                    </div>
-                  )}
+                  {/* Payment Section */}
+                  <Card className="border-0 p-0 shadow-none">
+                    <CardHeader className="px-0 pt-4">
+                      <CardTitle className="flex items-center gap-2">
+                        <CreditCard className="h-5 w-5" />
+                        Payment Details
+                      </CardTitle>
+                      <CardDescription>
+                        {squareReady ? "Enter your card details below" : "Complete your order"}
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="px-0">
+                      {squareReady && (
+                        <div className="p-4 border-2 border-gray-200 rounded-lg bg-white">
+                          <div id={cardContainerId} />
+                        </div>
+                      )}
 
-                  <Button type="submit" size="lg" className="w-full" disabled={loading}>
-                    {loading ? "Processing..." : "Proceed to Payment"}
-                  </Button>
+                      {error && (
+                        <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-md mt-4">
+                          {error}
+                        </div>
+                      )}
+
+                      <Button type="submit" size="lg" className="w-full mt-4" disabled={loading}>
+                        {loading ? (
+                          <>
+                            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                            Processing...
+                          </>
+                        ) : (
+                          `Pay ${quote ? formatCurrency(quote.total) : ""}`
+                        )}
+                      </Button>
+                    </CardContent>
+                  </Card>
                 </form>
               </CardContent>
             </Card>
           </div>
 
-          {/* Right Column - Order Summary */}
+          {/* Order Summary */}
           <div>
             <Card className="sticky top-24">
               <CardHeader>
                 <CardTitle>Order Summary</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {/* Cart Items */}
                 <div className="space-y-3 pb-4 border-b">
                   {items.map((item, index) => {
                     const product = getProductById(item.productId);
@@ -271,14 +330,12 @@ export default function CheckoutPage() {
                         <div className="flex-grow">
                           <p className="font-medium text-sm">{product?.name}</p>
                           <p className="text-xs text-gray-600">
-                            {variant?.quantity} units • {option?.name}
+                            {variant?.quantity} units {option?.name ? `• ${option.name}` : ""}
                           </p>
                         </div>
                         <div className="flex items-center gap-2">
                           <p className="font-medium text-sm">
-                            {formatCurrency(
-                              (variant?.price || 0) + (option?.price || 0)
-                            )}
+                            {formatCurrency((variant?.price || 0) + (option?.price || 0))}
                           </p>
                           <Button
                             variant="ghost"
@@ -294,29 +351,24 @@ export default function CheckoutPage() {
                   })}
                 </div>
 
-                {/* Price Breakdown */}
                 {quote && (
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600">Subtotal:</span>
                       <span>{formatCurrency(quote.subtotal)}</span>
                     </div>
-
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600">Shipping:</span>
                       <span>{formatCurrency(quote.shipping)}</span>
                     </div>
-
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600">Tax:</span>
                       <span>{formatCurrency(quote.tax)}</span>
                     </div>
-
                     <div className="flex justify-between text-lg font-bold pt-2 border-t">
                       <span>Total:</span>
                       <span className="text-blue-600">{formatCurrency(quote.total)}</span>
                     </div>
-
                     <p className="text-xs text-gray-500 pt-2">
                       Estimated delivery: {quote.estimatedDelivery}
                     </p>
