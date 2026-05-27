@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSupabase, getOrderByNumber, getCustomerOrders } from "@/lib/supabase";
+import { getOrderByNumber, getCustomerOrders } from "@/lib/db";
+import { neon } from "@neondatabase/serverless";
 
 // GET - Fetch order(s)
 export async function GET(req: NextRequest) {
@@ -9,7 +10,6 @@ export async function GET(req: NextRequest) {
     const email = searchParams.get("email");
 
     if (orderNumber) {
-      // Fetch single order by order number
       const order = await getOrderByNumber(orderNumber);
 
       if (!order) {
@@ -23,7 +23,6 @@ export async function GET(req: NextRequest) {
     }
 
     if (email) {
-      // Fetch all orders for a customer
       const orders = await getCustomerOrders(email);
       return NextResponse.json({ orders });
     }
@@ -54,7 +53,9 @@ export async function PATCH(req: NextRequest) {
       );
     }
 
-    const supabase = getServerSupabase();
+    const url = process.env.DATABASE_URL;
+    if (!url) throw new Error("Missing DATABASE_URL");
+    const sql = neon(url);
 
     const updateData: Record<string, unknown> = {
       status,
@@ -69,18 +70,15 @@ export async function PATCH(req: NextRequest) {
       updateData.notes = notes;
     }
 
-    const { data: order, error } = await supabase
-      .from("orders")
-      .update(updateData)
-      .eq("id", orderId)
-      .select()
-      .single();
+    const keys = Object.keys(updateData);
+    const values = Object.values(updateData);
+    const setClause = keys.map((k, i) => `${k} = $${i + 1}`).join(", ");
+    const result = await sql.query(
+      `UPDATE orders SET ${setClause} WHERE id = $${keys.length + 1} RETURNING *`,
+      [...values, orderId]
+    );
 
-    if (error) throw error;
-
-    // TODO: Send status update email to customer
-
-    return NextResponse.json({ order });
+    return NextResponse.json({ order: result[0] });
   } catch (error) {
     console.error("Error updating order:", error);
     return NextResponse.json(
@@ -103,46 +101,35 @@ export async function DELETE(req: NextRequest) {
       );
     }
 
-    const supabase = getServerSupabase();
+    const url = process.env.DATABASE_URL;
+    if (!url) throw new Error("Missing DATABASE_URL");
+    const sql = neon(url);
 
-    // Check if order can be cancelled
-    const { data: order } = await supabase
-      .from("orders")
-      .select("status")
-      .eq("id", orderId)
-      .single();
+    const orders = await sql.query(
+      "SELECT status FROM orders WHERE id = $1",
+      [orderId]
+    );
 
-    if (!order) {
+    if (orders.length === 0) {
       return NextResponse.json(
         { error: "Order not found" },
         { status: 404 }
       );
     }
 
-    if (["shipped", "delivered"].includes(order.status)) {
+    if (["shipped", "delivered"].includes(orders[0].status)) {
       return NextResponse.json(
         { error: "Cannot cancel order that has been shipped" },
         { status: 400 }
       );
     }
 
-    // Update order status to cancelled
-    const { data: cancelledOrder, error } = await supabase
-      .from("orders")
-      .update({
-        status: "cancelled",
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", orderId)
-      .select()
-      .single();
+    const result = await sql.query(
+      "UPDATE orders SET status = 'cancelled', updated_at = NOW() WHERE id = $1 RETURNING *",
+      [orderId]
+    );
 
-    if (error) throw error;
-
-    // TODO: Process refund if payment was made
-    // TODO: Send cancellation confirmation email
-
-    return NextResponse.json({ order: cancelledOrder });
+    return NextResponse.json({ order: result[0] });
   } catch (error) {
     console.error("Error cancelling order:", error);
     return NextResponse.json(

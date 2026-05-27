@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyWebhookSignature } from "@/lib/square";
-import { getServerSupabase } from "@/lib/supabase";
+import { neon } from "@neondatabase/serverless";
 
 export async function POST(req: NextRequest) {
   try {
@@ -14,7 +14,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Verify webhook signature
     const signatureKey = process.env.SQUARE_WEBHOOK_SIGNATURE_KEY;
     if (!signatureKey) {
       console.error("Missing SQUARE_WEBHOOK_SIGNATURE_KEY");
@@ -32,10 +31,12 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const event = JSON.parse(body);
-    const supabase = getServerSupabase();
+    const url = process.env.DATABASE_URL;
+    if (!url) throw new Error("Missing DATABASE_URL");
+    const sql = neon(url);
 
-    // Handle different event types
+    const event = JSON.parse(body);
+
     switch (event.type) {
       case "payment.created": {
         const payment = event.data.object.payment;
@@ -54,25 +55,16 @@ export async function POST(req: NextRequest) {
         if (!referenceId) break;
 
         if (status === "COMPLETED") {
-          await supabase
-            .from("orders")
-            .update({
-              status: "paid",
-              payment_status: "completed",
-              updated_at: new Date().toISOString(),
-            })
-            .eq("id", referenceId);
-
+          await sql.query(
+            "UPDATE orders SET status = $1, payment_status = $2, updated_at = NOW() WHERE id = $3",
+            ["paid", "completed", referenceId]
+          );
           console.log(`Order ${referenceId} payment completed`);
         } else if (status === "FAILED") {
-          await supabase
-            .from("orders")
-            .update({
-              status: "payment_failed",
-              payment_status: "failed",
-              updated_at: new Date().toISOString(),
-            })
-            .eq("id", referenceId);
+          await sql.query(
+            "UPDATE orders SET status = $1, payment_status = $2, updated_at = NOW() WHERE id = $3",
+            ["payment_failed", "failed", referenceId]
+          );
         }
         break;
       }
@@ -81,22 +73,16 @@ export async function POST(req: NextRequest) {
         const refund = event.data.object.refund;
         const paymentId = refund.payment_id;
 
-        const { data: order } = await supabase
-          .from("orders")
-          .select("id")
-          .eq("payment_id", paymentId)
-          .single();
+        const orders = await sql.query(
+          "SELECT id FROM orders WHERE payment_id = $1",
+          [paymentId]
+        );
 
-        if (order) {
-          await supabase
-            .from("orders")
-            .update({
-              status: "refunded",
-              payment_status: "refunded",
-              notes: "Payment refunded",
-              updated_at: new Date().toISOString(),
-            })
-            .eq("id", order.id);
+        if (orders.length > 0) {
+          await sql.query(
+            "UPDATE orders SET status = $1, payment_status = $2, notes = $3, updated_at = NOW() WHERE id = $4",
+            ["refunded", "refunded", "Payment refunded", orders[0].id]
+          );
         }
         break;
       }

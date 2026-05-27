@@ -1,6 +1,6 @@
-# PrintFlow - Professional Print-on-Demand Platform
+# PrintSpark - Professional Print-on-Demand Platform
 
-A complete, production-ready print-on-demand e-commerce platform built with Next.js 14, TypeScript, Supabase, and Stripe.
+A complete, production-ready print-on-demand e-commerce platform built with Next.js 16, TypeScript, Neon (Postgres), and Square Payments.
 
 ## Features
 
@@ -9,70 +9,81 @@ A complete, production-ready print-on-demand e-commerce platform built with Next
 - **Real-time Price Calculator** - Instant quotes based on quantity, options, and design services
 - **File Upload System** - Drag-and-drop design file upload with validation
 - **Shopping Cart** - Persistent cart with Zustand state management
-- **Stripe Checkout** - Secure payment processing
+- **Square Checkout** - Secure card payment processing via Square Web Payments SDK
 - **Order Tracking** - Real-time order status tracking
 - **Custom Quote Requests** - Form for bulk orders and special requests
 - **Responsive Design** - Mobile-first, fully responsive UI
 
 ### Business Features
 - **Automated Order Management** - Order creation, status updates, tracking
-- **Design File Storage** - Supabase storage for customer uploads
-- **Webhook Integration** - Stripe webhooks for payment notifications
+- **Design File Storage** - Vercel Blob for customer uploads
+- **Webhook Integration** - Square webhooks for payment notifications
 - **Email Notifications** - Customer confirmations and updates (ready to integrate)
 - **Shipping Calculator** - Dynamic shipping cost calculation
 - **Tax Calculation** - Automatic sales tax computation
 
 ## Tech Stack
 
-- **Framework**: Next.js 14 (App Router)
+- **Framework**: Next.js 16 (App Router)
 - **Language**: TypeScript
 - **Styling**: Tailwind CSS 4
 - **UI Components**: Radix UI
 - **State Management**: Zustand
-- **Database**: Supabase (PostgreSQL)
-- **Payments**: Stripe
-- **File Storage**: Supabase Storage
+- **Database**: Neon (serverless PostgreSQL)
+- **Payments**: Square
+- **File Storage**: Vercel Blob
 - **Email**: Resend (optional)
 
 ## Project Structure
 
 ```
-print-shack-website/
+printspark/
 ├── app/
 │   ├── api/
-│   │   ├── checkout/route.ts          # Create Stripe checkout session
-│   │   ├── orders/route.ts            # Order CRUD operations
+│   │   ├── checkout/route.ts           # Square checkout processing
+│   │   ├── contact/route.ts            # Contact form submission
+│   │   ├── orders/route.ts             # Order CRUD operations
+│   │   ├── quote/route.ts              # Quote request submission
 │   │   ├── shipping/calculate/route.ts # Shipping cost calculation
-│   │   └── webhooks/stripe/route.ts   # Stripe webhook handler
+│   │   └── webhooks/square/route.ts    # Square webhook handler
 │   ├── products/
-│   │   ├── [id]/page.tsx              # Product detail page
-│   │   └── page.tsx                   # Products listing
-│   ├── checkout/page.tsx              # Checkout flow
-│   ├── track/page.tsx                 # Order tracking
-│   ├── contact/page.tsx               # Contact form
-│   ├── quote/page.tsx                 # Custom quote request
-│   ├── layout.tsx                     # Root layout with header/footer
-│   └── page.tsx                       # Homepage
+│   │   ├── [id]/page.tsx               # Product detail page
+│   │   └── page.tsx                    # Products listing
+│   ├── checkout/page.tsx               # Checkout with Square card form
+│   ├── order/success/page.tsx          # Order confirmation
+│   ├── track/page.tsx                  # Order tracking
+│   ├── about/page.tsx                  # About us
+│   ├── faq/page.tsx                    # FAQ
+│   ├── shipping/page.tsx               # Shipping info
+│   ├── returns/page.tsx                # Returns policy
+│   ├── terms/page.tsx                  # Terms of service
+│   ├── privacy/page.tsx                # Privacy policy
+│   ├── contact/page.tsx                # Contact form
+│   ├── quote/page.tsx                  # Custom quote request
+│   ├── design-guidelines/page.tsx      # Design file specs
+│   ├── layout.tsx                      # Root layout with header/footer
+│   └── page.tsx                        # Homepage
 ├── components/
-│   ├── ui/                            # Reusable UI components
+│   ├── ui/                             # Reusable UI components
 │   │   ├── button.tsx
 │   │   ├── input.tsx
 │   │   ├── select.tsx
 │   │   ├── card.tsx
 │   │   └── label.tsx
-│   ├── Header.tsx                     # Site header with cart
-│   ├── Footer.tsx                     # Site footer
-│   ├── ProductCard.tsx                # Product display card
-│   ├── PriceCalculator.tsx            # Dynamic price calculator
-│   └── FileUpload.tsx                 # File upload component
+│   ├── Header.tsx                      # Site header with cart
+│   ├── Footer.tsx                      # Site footer
+│   ├── ProductCard.tsx                 # Product display card
+│   ├── PriceCalculator.tsx             # Dynamic price calculator
+│   └── FileUpload.tsx                  # File upload component
 ├── lib/
-│   ├── constants.ts                   # Products, pricing, business info
-│   ├── types.ts                       # TypeScript type definitions
-│   ├── utils.ts                       # Helper functions
-│   ├── supabase.ts                    # Supabase client & queries
-│   ├── stripe.ts                      # Stripe configuration
-│   └── store.ts                       # Zustand state stores
-└── supabase-schema.sql                # Database schema
+│   ├── constants.ts                    # Products, pricing, business info
+│   ├── types.ts                        # TypeScript type definitions
+│   ├── utils.ts                        # Helper functions
+│   ├── db.ts                           # Neon/Postgres queries
+│   ├── storage.ts                      # Vercel Blob file storage
+│   ├── square.ts                       # Square SDK configuration
+│   └── store.ts                        # Zustand state stores
+└── neon-schema.sql                     # Database schema
 ```
 
 ## Getting Started
@@ -80,40 +91,38 @@ print-shack-website/
 ### Prerequisites
 
 - Node.js 18+ and pnpm
-- Supabase account
-- Stripe account
+- Neon account
+- Square account
 
 ### 1. Clone and Install
 
 ```bash
 git clone <repository-url>
-cd print-shack-website
+cd printspark
 pnpm install
 ```
 
-### 2. Set Up Supabase
+### 2. Set Up Neon Database
 
-1. Create a new project at [supabase.com](https://supabase.com)
-2. Run the database schema:
-   - Go to SQL Editor in Supabase Dashboard
-   - Copy and paste the contents of `supabase-schema.sql`
+1. Create a project at [neon.tech](https://neon.tech)
+2. Copy your connection string (Project Dashboard → Connection Details → PSQL)
+3. Run the database schema:
+   - Open the Neon SQL Editor
+   - Copy and paste the contents of `neon-schema.sql`
    - Execute the SQL
-3. Create a storage bucket:
-   - Go to Storage in Supabase Dashboard
-   - The schema already creates the bucket, but verify it exists
-   - Bucket name: `design-files`
 
-### 3. Set Up Stripe
+### 3. Set Up Square
 
-1. Create a Stripe account at [stripe.com](https://stripe.com)
-2. Get your API keys from Dashboard → Developers → API keys
-3. Set up a webhook endpoint:
-   - URL: `https://your-domain.com/api/webhooks/stripe`
-   - Events to listen to:
-     - `checkout.session.completed`
-     - `payment_intent.succeeded`
-     - `payment_intent.payment_failed`
-     - `charge.refunded`
+1. Create a Square account at [squareup.com](https://squareup.com)
+2. Go to Developer Dashboard → Applications → Create App
+3. Get your credentials:
+   - **Application ID** (from Credentials tab)
+   - **Location ID** (from Locations tab)
+   - **Access Token** (from Credentials tab → Generate token)
+4. Configure Webhooks:
+   - Go to Webhooks tab → Add webhook endpoint
+   - URL: `https://your-domain.com/api/webhooks/square`
+   - Subscribe to: `payment.created`, `payment.updated`, `refund.created`
 
 ### 4. Environment Variables
 
@@ -125,22 +134,22 @@ cp .env.example .env.local
 
 Required variables:
 ```env
-# Supabase
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
+# Neon
+DATABASE_URL=postgresql://user:pass@ep-example.us-east-2.aws.neon.tech/neondb?sslmode=require
 
-# Stripe
-NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_...
-STRIPE_SECRET_KEY=sk_test_...
-STRIPE_WEBHOOK_SECRET=whsec_...
+# Square
+NEXT_PUBLIC_SQUARE_APPLICATION_ID=sandbox-sq0idb-...
+SQUARE_ACCESS_TOKEN=EAAAl...
+SQUARE_ENVIRONMENT=sandbox
+SQUARE_LOCATION_ID=L...
+SQUARE_WEBHOOK_SIGNATURE_KEY=...
 
 # Application
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 
 # Email (Optional)
 RESEND_API_KEY=re_...
-FROM_EMAIL=orders@printflow.co
+FROM_EMAIL=orders@printspark.website
 ```
 
 ### 5. Run Development Server
@@ -175,13 +184,14 @@ All products include:
 ## API Routes
 
 ### POST `/api/checkout`
-Create a Stripe checkout session
+Process payment and create order via Square
 ```json
 {
   "items": CartItem[],
   "shippingAddress": ShippingAddress,
   "shippingMethod": "standard" | "express" | "overnight",
-  "customerEmail": string
+  "customerEmail": string,
+  "paymentToken": string
 }
 ```
 
@@ -208,8 +218,32 @@ Calculate shipping costs
 }
 ```
 
-### POST `/api/webhooks/stripe`
-Handle Stripe webhook events
+### POST `/api/contact`
+Submit contact form
+```json
+{
+  "name": string,
+  "email": string,
+  "subject": string,
+  "message": string
+}
+```
+
+### POST `/api/quote`
+Submit custom quote request
+```json
+{
+  "name": string,
+  "email": string,
+  "phone": string,
+  "productId": string,
+  "quantity": number,
+  "description": string
+}
+```
+
+### POST `/api/webhooks/square`
+Handle Square webhook events (payment.updated, refund.created, etc.)
 
 ## Customization
 
@@ -217,11 +251,11 @@ Handle Stripe webhook events
 Edit `/lib/constants.ts`:
 ```typescript
 export const BUSINESS_INFO = {
-  name: "PrintFlow",
+  name: "PrintSpark",
   tagline: "Professional Printing, Delivered Nationwide",
-  email: "orders@printflow.co",
-  support: "support@printflow.co",
-  phone: "(888) 555-7746",
+  email: "hello@printspark.website",
+  support: "support@printspark.website",
+  phone: "(888) 774-6877",
   address: "123 Print Street, Suite 100, New York, NY 10001",
   hours: "Monday - Friday: 9AM - 6PM EST",
 };
@@ -244,32 +278,12 @@ Modify shipping rates and tax rate in `/lib/constants.ts`
 
 1. Push code to GitHub
 2. Import project in Vercel
-3. Add environment variables
+3. Add environment variables (DATABASE_URL, Square keys, Vercel Blob token)
 4. Deploy
 
 ```bash
 # Build command (automatic)
 pnpm build
-
-# Deploy
-vercel --prod
-```
-
-### Other Platforms
-
-The app works on any platform supporting Next.js:
-- Netlify
-- Railway
-- Render
-- AWS Amplify
-- Self-hosted
-
-## Testing Stripe Webhooks Locally
-
-Use Stripe CLI:
-
-```bash
-stripe listen --forward-to localhost:3000/api/webhooks/stripe
 ```
 
 ## TODO / Future Enhancements
@@ -285,20 +299,10 @@ stripe listen --forward-to localhost:3000/api/webhooks/stripe
 - [ ] Analytics dashboard
 - [ ] Inventory management
 
-## Contributing
-
-This is a production-ready starting point. Customize and extend as needed for your business.
-
 ## License
 
 MIT License - feel free to use for commercial projects.
 
-## Support
-
-For questions or issues:
-- Email: orders@printflow.co
-- Phone: (888) 555-7746
-
 ---
 
-Built with Next.js, TypeScript, Supabase, and Stripe.
+Built with Next.js, TypeScript, Neon, Square, and Vercel Blob.

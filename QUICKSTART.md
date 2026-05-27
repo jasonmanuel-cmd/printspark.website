@@ -1,4 +1,4 @@
-# PrintFlow - Quick Start Guide
+# PrintSpark - Quick Start Guide
 
 Get your print-on-demand platform running in under 15 minutes.
 
@@ -7,10 +7,10 @@ Get your print-on-demand platform running in under 15 minutes.
 A complete, production-ready print-on-demand e-commerce platform with:
 - 9 ready-to-sell printing products
 - Shopping cart and checkout
-- Stripe payment integration
+- Square payment integration
 - Order tracking system
 - File upload for customer designs
-- Full TypeScript, Next.js 14, Supabase, and Stripe integration
+- Full TypeScript, Next.js 16, Neon (Postgres), and Square integration
 
 ## Prerequisites
 
@@ -34,12 +34,8 @@ cp .env.example .env.local
 Edit `.env.local` with temporary values for local development:
 ```env
 # Use placeholders for local dev
-NEXT_PUBLIC_SUPABASE_URL=https://placeholder.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=placeholder
-SUPABASE_SERVICE_ROLE_KEY=placeholder
-NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_placeholder
-STRIPE_SECRET_KEY=sk_test_placeholder
-STRIPE_WEBHOOK_SECRET=whsec_placeholder
+DATABASE_URL=postgresql://placeholder
+NEXT_PUBLIC_SQUARE_APPLICATION_ID=placeholder
 NEXT_PUBLIC_BASE_URL=http://localhost:3000
 ```
 
@@ -58,34 +54,35 @@ Open [http://localhost:3000](http://localhost:3000)
 - Price calculator ✅
 - Contact form UI ✅
 - Order tracking UI ✅
+- Static pages (About, FAQ, Shipping, Returns, etc.) ✅
 
 ## What Needs Setup
 
 To enable full functionality:
 
 ### Required for Checkout:
-1. **Supabase** - For database and file storage
-2. **Stripe** - For payment processing
+1. **Neon** - For database
+2. **Square** - For payment processing
+3. **Vercel Blob** - For file uploads (auto-enabled on Vercel)
 
 ## 10-Minute Production Setup
 
-### Step 1: Supabase (5 minutes)
+### Step 1: Neon (5 minutes)
 
-1. Create account at [supabase.com](https://supabase.com)
+1. Create account at [neon.tech](https://neon.tech)
 2. Create new project
 3. Go to SQL Editor
-4. Copy/paste contents of `supabase-schema.sql`
+4. Copy/paste contents of `neon-schema.sql`
 5. Execute
-6. Copy credentials from Project Settings → API
+6. Copy connection string from Project Dashboard → Connection Details
 
-### Step 2: Stripe (5 minutes)
+### Step 2: Square (5 minutes)
 
-1. Create account at [stripe.com](https://stripe.com)
-2. Go to Developers → API keys
-3. Copy test keys
-4. Set up webhook at `https://your-domain.com/api/webhooks/stripe`
-5. Select events: `checkout.session.completed`, `payment_intent.succeeded`
-6. Copy webhook secret
+1. Create account at [developer.squareup.com](https://developer.squareup.com)
+2. Create application
+3. Copy Application ID and Access Token
+4. Set up webhook at `https://your-domain.com/api/webhooks/square`
+5. Subscribe to: `payment.created`, `payment.updated`, `refund.created`
 
 ### Step 3: Update Environment Variables
 
@@ -95,7 +92,7 @@ Update `.env.local` with real credentials.
 
 1. Browse products
 2. Add to cart
-3. Checkout (use test card: `4242 4242 4242 4242`)
+3. Checkout with Square card form
 4. View order confirmation
 5. Track order
 
@@ -108,7 +105,7 @@ git push
 # 2. Import in Vercel
 # - Go to vercel.com
 # - Import repository
-# - Add environment variables
+# - Add environment variables (DATABASE_URL, Square keys)
 # - Deploy
 
 # Done! Your site is live
@@ -117,7 +114,7 @@ git push
 ## File Structure
 
 ```
-print-shack-website/
+printspark/
 ├── app/                    # Next.js pages
 │   ├── api/               # API routes
 │   ├── products/          # Product pages
@@ -126,10 +123,10 @@ print-shack-website/
 ├── components/            # React components
 ├── lib/                   # Core logic
 │   ├── constants.ts       # Products & pricing
-│   ├── stripe.ts          # Stripe config
-│   ├── supabase.ts        # Database
+│   ├── db.ts              # Neon/Postgres queries
+│   ├── storage.ts         # File storage
 │   └── ...
-└── supabase-schema.sql    # Database schema
+└── neon-schema.sql        # Database schema
 ```
 
 ## Customization
@@ -139,7 +136,7 @@ Edit `/lib/constants.ts`:
 ```typescript
 export const BUSINESS_INFO = {
   name: "Your Business Name",
-  email: "orders@yourbusiness.com",
+  email: "hello@yourbusiness.com",
   // ...
 };
 ```
@@ -167,18 +164,12 @@ pnpm lint             # Run linter
 
 ## Testing Payment Flow
 
-Use Stripe test cards:
-- Success: `4242 4242 4242 4242`
-- Decline: `4000 0000 0000 0002`
-- Requires auth: `4000 0025 0000 3155`
-
-Any future expiry date and any 3-digit CVC.
+Use Square sandbox test cards through the Square Web Payments SDK form.
 
 ## Support & Documentation
 
 - **Full Documentation**: See `README.md`
 - **Deployment Guide**: See `DEPLOYMENT.md`
-- **File Overview**: See `FILES_CREATED.md`
 
 ## What's Included
 
@@ -197,7 +188,7 @@ Any future expiry date and any 3-digit CVC.
 - Real-time price calculator
 - File upload with validation
 - Shopping cart with persistence
-- Stripe checkout
+- Square card payment
 - Order tracking
 - Custom quotes
 - Contact forms
@@ -225,8 +216,8 @@ pnpm build
 ## Next Steps
 
 1. ✅ Get local dev running
-2. ✅ Set up Supabase
-3. ✅ Configure Stripe
+2. ✅ Set up Neon
+3. ✅ Configure Square
 4. ✅ Test complete order flow
 5. ✅ Deploy to Vercel
 6. ✅ Add custom domain

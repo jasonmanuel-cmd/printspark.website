@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createPayment, createSquareOrder } from "@/lib/square";
-import { createOrder, updateOrder } from "@/lib/supabase";
+import { createOrder, updateOrder } from "@/lib/db";
 import { generateOrderNumber } from "@/lib/utils";
 import { CartItem, ShippingAddress } from "@/lib/types";
 import { PRODUCTS } from "@/lib/constants";

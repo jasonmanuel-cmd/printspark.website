@@ -1,75 +1,60 @@
-# PrintFlow Deployment Guide
+# PrintSpark Deployment Guide
 
-This guide will walk you through deploying your PrintFlow print-on-demand platform to production.
+This guide will walk you through deploying your PrintSpark print-on-demand platform to production.
 
 ## Prerequisites
 
 - Git repository (GitHub, GitLab, or Bitbucket)
-- Supabase account
-- Stripe account
+- Neon account
+- Square account
 - Vercel account (recommended) or another hosting platform
 
-## Step 1: Database Setup (Supabase)
+## Step 1: Database Setup (Neon)
 
-### 1.1 Create Supabase Project
+### 1.1 Create Neon Project
 
-1. Go to [supabase.com](https://supabase.com) and sign in
+1. Go to [neon.tech](https://neon.tech) and sign in
 2. Click "New Project"
-3. Choose your organization
-4. Set project name: `printflow-prod`
-5. Generate a strong database password (save it securely)
-6. Choose a region close to your customers
-7. Wait for the project to be provisioned (~2 minutes)
+3. Set project name: `printspark-prod`
+4. Choose a region close to your customers
+5. Wait for the project to be provisioned
 
 ### 1.2 Run Database Schema
 
-1. In your Supabase dashboard, go to the SQL Editor
-2. Open `supabase-schema.sql` from your project
+1. In your Neon dashboard, open the SQL Editor
+2. Open `neon-schema.sql` from your project
 3. Copy and paste the entire contents
 4. Click "Run" to execute the schema
-5. Verify all tables were created in the Table Editor
+5. Verify all tables were created
 
-### 1.3 Get Your Supabase Credentials
+### 1.3 Get Your Neon Connection String
 
-1. Go to Project Settings → API
-2. Copy the following:
-   - Project URL (`NEXT_PUBLIC_SUPABASE_URL`)
-   - Anon/Public key (`NEXT_PUBLIC_SUPABASE_ANON_KEY`)
-   - Service Role key (`SUPABASE_SERVICE_ROLE_KEY`) - Keep this SECRET!
+1. Go to Project Dashboard → Connection Details
+2. Copy the connection string (PSQL format)
+3. Format: `postgresql://user:pass@ep-example.us-east-2.aws.neon.tech/neondb?sslmode=require`
 
-### 1.4 Set Up Storage Bucket
-
-The schema creates the bucket automatically, but verify:
-1. Go to Storage in Supabase
-2. Confirm `design-files` bucket exists
-3. If not, create it manually with:
-   - Name: `design-files`
-   - Public: No
-   - File size limit: 52428800 (50MB)
-
-## Step 2: Stripe Setup
+## Step 2: Square Setup
 
 ### 2.1 Get API Keys
 
-1. Go to [stripe.com/dashboard](https://dashboard.stripe.com)
-2. Navigate to Developers → API keys
-3. Copy:
-   - Publishable key (`NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`)
-   - Secret key (`STRIPE_SECRET_KEY`)
+1. Go to [developer.squareup.com](https://developer.squareup.com)
+2. Create or select your application
+3. Navigate to Credentials tab
+4. Copy:
+   - Application ID (`NEXT_PUBLIC_SQUARE_APPLICATION_ID`)
+   - Access Token (`SQUARE_ACCESS_TOKEN`)
+5. Note your Location ID from the Locations tab (`SQUARE_LOCATION_ID`)
 
 ### 2.2 Configure Webhook
 
-1. Go to Developers → Webhooks
-2. Click "Add endpoint"
-3. Endpoint URL: `https://your-domain.com/api/webhooks/stripe`
-4. Description: "PrintFlow order webhooks"
-5. Events to send:
-   - `checkout.session.completed`
-   - `payment_intent.succeeded`
-   - `payment_intent.payment_failed`
-   - `charge.refunded`
-6. Click "Add endpoint"
-7. Copy the Signing Secret (`STRIPE_WEBHOOK_SECRET`)
+1. Go to Webhooks tab
+2. Click "Add webhook"
+3. Endpoint URL: `https://your-domain.com/api/webhooks/square`
+4. Subscribe to events:
+   - `payment.created`
+   - `payment.updated`
+   - `refund.created`
+5. Copy the Webhook Signature Key (`SQUARE_WEBHOOK_SIGNATURE_KEY`)
 
 ## Step 3: Deployment (Vercel)
 
@@ -79,29 +64,28 @@ The schema creates the bucket automatically, but verify:
 2. Click "New Project"
 3. Import your Git repository
 4. Framework Preset: Next.js (auto-detected)
-5. Root Directory: `./` (leave default)
 
 ### 3.2 Configure Environment Variables
 
 Add the following environment variables:
 
 ```env
-# Supabase
-NEXT_PUBLIC_SUPABASE_URL=https://xxxxx.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGc...
-SUPABASE_SERVICE_ROLE_KEY=eyJhbGc...
+# Neon
+DATABASE_URL=postgresql://user:pass@ep-example.us-east-2.aws.neon.tech/neondb?sslmode=require
 
-# Stripe
-NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_live_...
-STRIPE_SECRET_KEY=sk_live_...
-STRIPE_WEBHOOK_SECRET=whsec_...
+# Square
+NEXT_PUBLIC_SQUARE_APPLICATION_ID=sandbox-sq0idb-...
+SQUARE_ACCESS_TOKEN=EAAAl...
+SQUARE_ENVIRONMENT=sandbox
+SQUARE_LOCATION_ID=L...
+SQUARE_WEBHOOK_SIGNATURE_KEY=...
 
 # App
 NEXT_PUBLIC_APP_URL=https://your-domain.com
 
 # Optional: Email
 RESEND_API_KEY=re_...
-FROM_EMAIL=orders@printflow.co
+FROM_EMAIL=hello@printspark.website
 ```
 
 ### 3.3 Deploy
@@ -115,14 +99,14 @@ FROM_EMAIL=orders@printflow.co
 ### 4.1 Add Domain in Vercel
 
 1. Go to Project Settings → Domains
-2. Add your custom domain (e.g., `printflow.com`)
+2. Add your custom domain (e.g., `printspark.website`)
 3. Follow DNS configuration instructions
 
 ### 4.2 Update Webhook URL
 
-1. Go back to Stripe Dashboard → Webhooks
+1. Go back to Square Developer Dashboard → Webhooks
 2. Edit your webhook endpoint
-3. Update URL to: `https://your-domain.com/api/webhooks/stripe`
+3. Update URL to: `https://your-domain.com/api/webhooks/square`
 
 ### 4.3 Update Environment Variables
 
@@ -131,19 +115,17 @@ FROM_EMAIL=orders@printflow.co
 
 ## Step 5: Testing
 
-### 5.1 Test Stripe Integration
+### 5.1 Test Square Integration
 
-1. Use Stripe test cards:
-   - Success: `4242 4242 4242 4242`
-   - Decline: `4000 0000 0000 0002`
+1. Square test card numbers work in sandbox mode
 2. Complete a test order
-3. Verify order appears in Supabase database
-4. Check webhook delivery in Stripe Dashboard
+3. Verify order appears in Neon database
+4. Check webhook delivery in Square Developer Dashboard
 
 ### 5.2 Test File Uploads
 
 1. Create a test order with a design file
-2. Verify file uploads to Supabase Storage
+2. Verify file uploads to Vercel Blob
 3. Check file size limits work (max 50MB)
 
 ### 5.3 Test Order Tracking
@@ -155,12 +137,11 @@ FROM_EMAIL=orders@printflow.co
 
 ## Step 6: Go Live
 
-### 6.1 Switch to Production Stripe
+### 6.1 Switch to Production Square
 
-1. In Stripe Dashboard, toggle from Test Mode to Live Mode
-2. Get new API keys (they start with `pk_live_` and `sk_live_`)
-3. Update environment variables in Vercel
-4. Redeploy
+1. In Square Developer Dashboard, create production credentials
+2. Update environment variables in Vercel
+3. Redeploy
 
 ### 6.2 Enable Production Features
 
@@ -173,13 +154,13 @@ FROM_EMAIL=orders@printflow.co
 
 ### 7.1 Monitor Orders
 
-- Check Supabase dashboard daily for new orders
+- Check Neon dashboard daily for new orders
 - Set up email notifications for new orders
 - Review design files and approve/reject
 
 ### 7.2 Update Order Status
 
-Use the API or create an admin dashboard:
+Use the API:
 ```bash
 # Update order status
 PATCH /api/orders
@@ -192,9 +173,7 @@ PATCH /api/orders
 
 ### 7.3 Backup Database
 
-1. In Supabase Dashboard → Settings → Database
-2. Enable daily backups (included in Pro plan)
-3. Download manual backups weekly
+Neon provides automated backups — check the Backup section in your project dashboard.
 
 ## Alternative Deployment Options
 
@@ -223,10 +202,9 @@ PATCH /api/orders
 ## Security Checklist
 
 - [ ] All API keys are in environment variables (not code)
-- [ ] `SUPABASE_SERVICE_ROLE_KEY` is kept secret
-- [ ] `STRIPE_SECRET_KEY` is kept secret
-- [ ] Stripe webhooks use signature verification
-- [ ] Row Level Security (RLS) enabled on Supabase tables
+- [ ] `DATABASE_URL` is kept secret
+- [ ] `SQUARE_ACCESS_TOKEN` is kept secret
+- [ ] Square webhooks use signature verification
 - [ ] File upload size limits enforced
 - [ ] HTTPS/SSL configured
 - [ ] CSP headers configured
@@ -243,23 +221,21 @@ PATCH /api/orders
 ### Webhook Not Receiving Events
 
 - Verify webhook URL is correct and accessible
-- Check Stripe webhook signing secret
-- Review webhook delivery logs in Stripe Dashboard
+- Check Square webhook signing secret
+- Review webhook delivery logs in Square Developer Dashboard
 - Ensure endpoint is POST-only
 
 ### Orders Not Saving
 
-- Check Supabase service role key is correct
+- Check `DATABASE_URL` is correct
 - Verify database schema is up to date
 - Review API route logs
-- Check RLS policies
 
 ### File Uploads Failing
 
-- Verify Supabase storage bucket exists
+- Verify Vercel Blob token is configured
 - Check file size (must be under 50MB)
 - Verify allowed file types
-- Check storage policies
 
 ## Support
 
@@ -267,8 +243,7 @@ For issues or questions:
 - Check the main README.md
 - Review API documentation
 - Check error logs in Vercel
-- Review Supabase logs
 
 ---
 
-Last updated: 2026-05-25
+Last updated: 2026-05-27
