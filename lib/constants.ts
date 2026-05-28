@@ -46,6 +46,7 @@ export interface Product {
   weight: number; // in pounds for shipping calculation
   requiresDesign: boolean;
   specifications: string[];
+  fulfillmentPartner: "printful" | "mixam" | "manual";
 }
 
 export const PRODUCTS: Product[] = [
@@ -78,6 +79,7 @@ export const PRODUCTS: Product[] = [
       "Full color both sides",
       "Rounded corners available",
     ],
+    fulfillmentPartner: "mixam",
   },
   {
     id: "flyers",
@@ -108,6 +110,7 @@ export const PRODUCTS: Product[] = [
       "Multiple paper stocks",
       "Perfect for promotions",
     ],
+    fulfillmentPartner: "mixam",
   },
   {
     id: "posters",
@@ -139,35 +142,7 @@ export const PRODUCTS: Product[] = [
       "High-resolution output",
       "Optional mounting",
     ],
-  },
-  {
-    id: "banners",
-    name: "Vinyl Banners",
-    category: "signage",
-    description: "Durable outdoor banners with grommets",
-    longDescription: "Weather-resistant vinyl banners perfect for outdoor events, grand openings, trade shows, and storefronts. Includes grommets for easy hanging and available in custom sizes.",
-    basePrice: 79,
-    image: "/products/banners.jpg",
-    variants: [
-      { id: "2x4", quantity: 1, price: 79 },
-      { id: "3x6", quantity: 1, price: 129 },
-      { id: "4x8", quantity: 1, price: 199 },
-      { id: "5x10", quantity: 1, price: 299 },
-    ],
-    options: [
-      { id: "standard", name: "13oz Vinyl", price: 0 },
-      { id: "premium", name: "Premium 18oz Vinyl", price: 40 },
-      { id: "mesh", name: "Mesh (for windy areas)", price: 30 },
-    ],
-    turnaroundDays: 4,
-    weight: 3.0,
-    requiresDesign: true,
-    specifications: [
-      "Material: 13oz vinyl banner",
-      "Grommets every 2 feet",
-      "Weather-resistant",
-      "Full color printing",
-    ],
+    fulfillmentPartner: "printful",
   },
   {
     id: "tshirts",
@@ -198,6 +173,7 @@ export const PRODUCTS: Product[] = [
       "Multiple colors available",
       "Professional printing",
     ],
+    fulfillmentPartner: "printful",
   },
   {
     id: "brochures",
@@ -227,6 +203,7 @@ export const PRODUCTS: Product[] = [
       "Full color both sides",
       "Multiple fold options",
     ],
+    fulfillmentPartner: "mixam",
   },
   {
     id: "postcards",
@@ -257,6 +234,7 @@ export const PRODUCTS: Product[] = [
       "Mailing services available",
       "EDDM ready",
     ],
+    fulfillmentPartner: "mixam",
   },
   {
     id: "stickers",
@@ -287,35 +265,7 @@ export const PRODUCTS: Product[] = [
       "Full color printing",
       "Kiss-cut or individual",
     ],
-  },
-  {
-    id: "yard-signs",
-    name: "Yard Signs",
-    category: "signage",
-    description: "Corrugated plastic yard signs with stakes",
-    longDescription: "Durable corrugated plastic yard signs perfect for real estate, political campaigns, events, and business promotions. Includes wire stakes for easy installation.",
-    basePrice: 149,
-    image: "/products/yard-signs.jpg",
-    variants: [
-      { id: "5", quantity: 5, price: 149 },
-      { id: "10", quantity: 10, price: 249 },
-      { id: "25", quantity: 25, price: 499 },
-      { id: "50", quantity: 50, price: 899 },
-    ],
-    options: [
-      { id: "single", name: "Single Sided", price: 0 },
-      { id: "double", name: "Double Sided", price: 75 },
-      { id: "stakes", name: "With Wire Stakes", price: 25 },
-    ],
-    turnaroundDays: 4,
-    weight: 8.0,
-    requiresDesign: true,
-    specifications: [
-      "Size: 18\" x 24\"",
-      "4mm corrugated plastic",
-      "Full color printing",
-      "Wire stakes included option",
-    ],
+    fulfillmentPartner: "printful",
   },
 ];
 

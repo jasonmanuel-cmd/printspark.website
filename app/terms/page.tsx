@@ -31,7 +31,7 @@ export default function TermsPage() {
           <CardContent>
             <p className="text-gray-600">
               PrintSpark provides custom printing services including but not limited to business cards,
-              flyers, posters, banners, apparel, and marketing materials. We reserve the right to
+              flyers, posters, apparel, and marketing materials. We reserve the right to
               refuse service for any order that violates our content policy.
             </p>
           </CardContent>

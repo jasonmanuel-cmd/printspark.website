@@ -24,7 +24,7 @@ export default function AboutPage() {
             shouldn't require weeks of waiting or premium agency prices.
           </p>
           <p>
-            From business cards to banners, t-shirts to trade show displays, we handle it all
+            From business cards to posters, t-shirts to trade show displays, we handle it all
             under one roof with a commitment to quality that's earned us thousands of happy customers.
           </p>
 

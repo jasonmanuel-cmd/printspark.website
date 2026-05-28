@@ -4,6 +4,8 @@ import "./globals.css";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { CartDrawer } from "@/components/CartDrawer";
+import { FloatingLogos } from "@/components/FloatingLogos";
+import { AgeVerification } from "@/components/AgeVerification";
 
 const inter = Inter({
   variable: "--font-sans",
@@ -19,8 +21,8 @@ const playfair = Playfair_Display({
 
 export const metadata: Metadata = {
   title: "PrintSpark - Print Fast. Look Amazing.",
-  description: "Your vision, perfectly printed. Custom business cards, flyers, banners, t-shirts, and more. 2-3 day turnaround, premium quality, delivered nationwide.",
-  keywords: ["printing", "custom printing", "business cards", "flyers", "banners", "t-shirts", "print on demand", "fast printing", "quality printing"],
+  description: "Your vision, perfectly printed. Custom business cards, flyers, posters, t-shirts, and more. 2-3 day turnaround, premium quality, delivered nationwide.",
+  keywords: ["printing", "custom printing", "business cards", "flyers", "posters", "t-shirts", "print on demand", "fast printing", "quality printing"],
   openGraph: {
     title: "PrintSpark - Print Fast. Look Amazing.",
     description: "Your vision, perfectly printed. Fast turnaround, premium quality.",
@@ -43,10 +45,13 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} ${playfair.variable}`}>
       <body className="flex flex-col min-h-screen font-sans antialiased">
-        <Header />
-        <main className="flex-1">{children}</main>
-        <Footer />
-        <CartDrawer />
+        <FloatingLogos />
+        <AgeVerification>
+          <Header />
+          <main className="flex-1">{children}</main>
+          <Footer />
+          <CartDrawer />
+        </AgeVerification>
       </body>
     </html>
   );

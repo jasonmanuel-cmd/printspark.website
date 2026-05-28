@@ -27,6 +27,9 @@ export interface DbOrder {
   payment_status?: string;
   square_order_id?: string;
   payment_error?: string;
+  fulfillment_partner?: string;
+  fulfillment_order_id?: string;
+  fulfillment_status?: string;
   notes?: string;
 }
 

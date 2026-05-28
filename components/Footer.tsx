@@ -8,7 +8,7 @@ export function Footer() {
       { name: "Business Cards", href: "/products/business-cards" },
       { name: "Flyers", href: "/products/flyers" },
       { name: "Posters", href: "/products/posters" },
-      { name: "Banners", href: "/products/banners" },
+      { name: "Posters", href: "/products/posters" },
       { name: "T-Shirts", href: "/products/tshirts" },
       { name: "View All Products", href: "/products" },
     ],

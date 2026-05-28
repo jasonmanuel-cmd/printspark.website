@@ -5,6 +5,8 @@ import { generateOrderNumber } from "@/lib/utils";
 import { CartItem, ShippingAddress } from "@/lib/types";
 import { PRODUCTS } from "@/lib/constants";
 import { calculateItemPrice, calculateCartSubtotal, calculateShipping, calculateTax, calculateTotal } from "@/lib/utils";
+import { fulfillOrder } from "@/lib/fulfillment/router";
+import { FulfillmentOrderItem } from "@/lib/fulfillment/types";
 
 export async function POST(req: NextRequest) {
   try {
@@ -117,11 +119,81 @@ export async function POST(req: NextRequest) {
         updated_at: new Date().toISOString(),
       });
 
+      // Submit to fulfillment partners
+      const fulfillmentItems: FulfillmentOrderItem[] = items.map((item) => ({
+        productId: item.productId,
+        variantId: item.variantId,
+        optionId: item.optionId,
+        quantity: item.quantity,
+        designFileUrl: item.designFile?.url,
+      }));
+
+      const fulfillmentResults = await fulfillOrder({
+        orderId: order.id,
+        orderNumber,
+        items: fulfillmentItems,
+        shippingAddress: {
+          name: `${shippingAddress.firstName} ${shippingAddress.lastName}`,
+          company: shippingAddress.company,
+          address1: shippingAddress.address1,
+          address2: shippingAddress.address2,
+          city: shippingAddress.city,
+          state: shippingAddress.state,
+          zip: shippingAddress.zipCode,
+          country: shippingAddress.country,
+          phone: shippingAddress.phone,
+          email: customerEmail,
+        },
+        shippingMethod,
+      });
+
+      const printfulResult = fulfillmentResults.find((r) => r.partner === "printful");
+      const mixamResult = fulfillmentResults.find((r) => r.partner === "mixam");
+
+      const fulfilledPartner = printfulResult?.success
+        ? "printful"
+        : mixamResult?.success
+          ? "mixam"
+          : null;
+
+      const updateData: Record<string, unknown> = {
+        updated_at: new Date().toISOString(),
+      };
+
+      if (fulfilledPartner) {
+        updateData.fulfillment_partner = fulfilledPartner;
+        updateData.status = "processing";
+      }
+
+      if (printfulResult?.partnerOrderId) {
+        updateData.fulfillment_order_id = printfulResult.partnerOrderId;
+        updateData.fulfillment_status = "submitted";
+      }
+
+      const allSucceeded = fulfillmentResults.every((r) => r.success);
+      if (allSucceeded) {
+        await updateOrder(order.id, updateData);
+      } else {
+        const failed = fulfillmentResults
+          .filter((r) => !r.success)
+          .map((r) => `[${r.partner}] ${r.error}`)
+          .join("; ");
+        await updateOrder(order.id, {
+          ...updateData,
+          notes: `Fulfillment submission issues: ${failed}`,
+        });
+      }
+
       return NextResponse.json({
         success: true,
         orderId: order.id,
         orderNumber,
         paymentId: payment?.id,
+        fulfillment: fulfillmentResults.map((r) => ({
+          partner: r.partner,
+          success: r.success,
+          orderId: r.partnerOrderId,
+        })),
       });
     } catch (paymentError: any) {
       // Payment failed - update order status

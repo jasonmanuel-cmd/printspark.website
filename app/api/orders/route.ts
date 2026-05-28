@@ -44,7 +44,7 @@ export async function GET(req: NextRequest) {
 export async function PATCH(req: NextRequest) {
   try {
     const body = await req.json();
-    const { orderId, status, trackingNumber, notes } = body;
+    const { orderId, status, trackingNumber, fulfillmentStatus, notes } = body;
 
     if (!orderId || !status) {
       return NextResponse.json(
@@ -64,6 +64,10 @@ export async function PATCH(req: NextRequest) {
 
     if (trackingNumber) {
       updateData.tracking_number = trackingNumber;
+    }
+
+    if (fulfillmentStatus) {
+      updateData.fulfillment_status = fulfillmentStatus;
     }
 
     if (notes) {

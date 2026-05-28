@@ -32,6 +32,9 @@ CREATE TABLE IF NOT EXISTS orders (
   payment_status VARCHAR(50),
   square_order_id VARCHAR(255),
   payment_error TEXT,
+  fulfillment_partner VARCHAR(50),
+  fulfillment_order_id VARCHAR(255),
+  fulfillment_status VARCHAR(50),
   notes TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
